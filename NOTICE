@@ -1,0 +1,10 @@
+commerce-agents-medusa
+Copyright 2026 Vishal Katyal
+
+Implements the StorefrontBackend and MerchantBackend contract of Anthropic's reference
+implementation, https://github.com/anthropics/commerce-agents (Copyright 2026 Anthropic
+PBC, Apache License 2.0), and serves its example web apps. The merchant fixtures the
+host can read (metrics history, campaigns, issues) come from that repository's
+examples/retail/data at run time; nothing from it is redistributed here.
+platform/medusa-backend/ holds two files for a Medusa v2 application created with
+create-medusa-app (Medusa, MIT).
