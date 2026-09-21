@@ -2,4 +2,4 @@
 adapters, durable ledger and sessions, order requests, Stripe Checkout placement, and a
 host that serves the reference web apps."""
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"

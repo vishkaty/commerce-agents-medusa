@@ -25,18 +25,6 @@ from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-from demo_common.merchant_fixtures import (
-    alert_counts,
-    load_campaigns,
-    load_issues,
-    margin_pct,
-    metric_window,
-    rebase_daily,
-    refuse_outside_range,
-    snapshot_of,
-    stage_campaign,
-)
-from demo_common.storefront_fixtures import load_json
 from merchant_agent import (
     ActorKind,
     AnalysisTable,
@@ -64,6 +52,19 @@ from merchant_agent import (
 )
 from merchant_agent.backend import MerchantBackend
 from merchant_agent.changes import ChangeNotApplicable, GuardrailViolation
+
+from demo_common.merchant_fixtures import (
+    alert_counts,
+    load_campaigns,
+    load_issues,
+    margin_pct,
+    metric_window,
+    rebase_daily,
+    refuse_outside_range,
+    snapshot_of,
+    stage_campaign,
+)
+from demo_common.storefront_fixtures import load_json
 
 from .analysis import SCHEMA_NOTE, AnalysisReplica
 from .ledger import SqliteLedger

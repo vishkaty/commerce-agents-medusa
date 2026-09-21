@@ -3,11 +3,7 @@ ids as SKUs and carry brand, rating, labels and attributes in metadata."""
 
 from __future__ import annotations
 
-import os
-from pathlib import Path
-
 import pytest
-from demo_common.storefront_fixtures import load_catalog, load_json
 
 from commerce_medusa.catalog_import import (
     ATTRIBUTE_PREFIX,
@@ -17,14 +13,10 @@ from commerce_medusa.catalog_import import (
     stock_levels,
 )
 from commerce_medusa.medusa_mapping import product_from_medusa
+from commerce_medusa.settings import LabSettings
+from demo_common.storefront_fixtures import load_catalog, load_json
 
-DATA = (
-    Path(os.environ.get("COMMERCE_AGENTS", "/tmp/commerce-agents")) / "examples" / "retail" / "data"
-)
-if not DATA.is_dir():
-    pytest.skip(
-        "set COMMERCE_AGENTS to a checkout of anthropics/commerce-agents", allow_module_level=True
-    )
+DATA = LabSettings.load().fixtures_dir
 
 
 @pytest.fixture(scope="module")

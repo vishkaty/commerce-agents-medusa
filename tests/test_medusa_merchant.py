@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import copy
 import json
-import os
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -28,15 +27,10 @@ from merchant_agent.changes import ChangeNotApplicable, GuardrailViolation
 from commerce_medusa.medusa_admin import MedusaAdmin
 from commerce_medusa.medusa_client import MedusaClient
 from commerce_medusa.medusa_merchant import MedusaMerchant
+from commerce_medusa.settings import LabSettings
 
 FIXTURES = Path(__file__).parent / "fixtures"
-DATA = (
-    Path(os.environ.get("COMMERCE_AGENTS", "/tmp/commerce-agents")) / "examples" / "retail" / "data"
-)
-if not DATA.is_dir():
-    pytest.skip(
-        "set COMMERCE_AGENTS to a checkout of anthropics/commerce-agents", allow_module_level=True
-    )
+DATA = LabSettings.load().fixtures_dir
 PRODUCTS = json.loads((FIXTURES / "medusa_admin_products.json").read_text())["products"]
 INVENTORY = json.loads((FIXTURES / "medusa_admin_inventory.json").read_text())["inventory_items"]
 ORDERS = json.loads((FIXTURES / "medusa_admin_orders.json").read_text())["orders"]

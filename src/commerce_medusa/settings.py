@@ -81,12 +81,14 @@ class LabSettings:
         )
 
     @property
-    def fixtures_dir(self) -> Path | None:
-        """The reference retail fixtures, when a checkout is configured and has them."""
-        if self.commerce_agents is None:
-            return None
-        candidate = self.commerce_agents / "examples" / "retail" / "data"
-        return candidate if candidate.is_dir() else None
+    def fixtures_dir(self) -> Path:
+        """The reference retail fixtures: a configured checkout's when it has them, else the
+        copy packaged here."""
+        if self.commerce_agents is not None:
+            candidate = self.commerce_agents / "examples" / "retail" / "data"
+            if candidate.is_dir():
+                return candidate
+        return Path(str(files("commerce_medusa") / "data" / "retail"))
 
     def data_file(self, name: str) -> Path:
         """``data_dir/name`` when present, else the packaged default of that name."""

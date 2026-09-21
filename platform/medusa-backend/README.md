@@ -9,10 +9,12 @@ with `npx create-medusa-app@latest`, then copy these two files into its `src/`:
   this middleware); the adapter also checks ownership itself, so a store without the
   middleware is safe too.
 - `src/migration-scripts/initial-data-seed.ts`: the seed the host was verified against
-  (a region, a sales channel, a publishable key, shipping options). Optional; any store
-  with a region, a sales channel linked to the publishable key, and a shipping option
-  works.
+  (a region, a sales channel, a publishable key, shipping options). `create-medusa-app`
+  now seeds a store of its own on creation (an EUR region, a sales channel, a publishable
+  key, shipping options, a few products), which is enough, so `scripts/bootstrap_medusa.sh`
+  does not run this one; use it with `npx medusa exec` on a store created another way.
 
-Then `scripts/import_retail_catalog.py` loads the reference retail catalog through the
-Admin API, and `scripts/seed_lab_customers.py` adds the customers, orders and listings
-the tests and the conformance suite need.
+`scripts/bootstrap_medusa.sh` does the whole of this against any Postgres 16 and prints
+what goes into `.env`. Then `scripts/import_retail_catalog.py` loads the packaged retail
+catalog through the Admin API, and `scripts/seed_lab_customers.py` adds the customers,
+orders and listings the tests and the conformance suite need.

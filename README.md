@@ -23,29 +23,35 @@ offline over recorded Medusa and Stripe responses and live against a running sto
 | `commerce_medusa.order_placement`, `stripe_checkout` | a Stripe Checkout Session per cart; the paid event places the Medusa order once, held when the amount does not match the cart |
 | `commerce_medusa.analysis` | the merchant's read-only analysis replica over Postgres (`[analysis]` extra) |
 | `commerce_medusa.host` | the reference `demo_common` routes over these adapters, the Stripe webhook and return pages, the order-action tools, and a paid order announced on the shopper's next turn |
-| `scripts/` | catalog import, seeding, two end-to-end checks against a live store, two SDK consoles |
+| `scripts/` | Medusa bootstrap, catalog import, seeding, two end-to-end checks against a live store, two SDK consoles |
 | `platform/medusa-backend/` | the two files a stock Medusa app needs |
+| `demo_common`, `commerce_medusa/skills`, `commerce_medusa/data/retail` | vendored from the reference at the pin so the package runs on its own |
 
 ## Install and run
 
 ```
-git clone https://github.com/vishkaty/commerce-agents-medusa && cd commerce-agents-medusa
-make setup                      # venv; clones the reference repo to /tmp/commerce-agents at the pin
-cp .env.example .env            # fill in the Medusa keys; Stripe test keys for checkout
-make host                       # the host on :8010
-make web                        # the reference storefront (:3000) and portal (:3100)
+pip install "commerce-agents-medusa @ git+https://github.com/vishkaty/commerce-agents-medusa"
+cp .env.example .env            # Medusa keys; Stripe test keys for checkout
+python -m uvicorn --factory commerce_medusa.host.store:default_app --port 8010
 ```
 
-The package needs a checkout of the reference repository at the pinned commit
-(`fd4d592`): its `examples/` directory is not a package and supplies `demo_common` (the
-routes) and the retail fixtures, and the two Agent SDK runtimes find their skills next to
-themselves there, so `make setup` installs those two editable from the checkout
-(`UPSTREAM=` to point elsewhere). The agents run on the
-Claude Agent SDK, so a Claude login is enough; no API key is read.
+Nothing else is needed: the reference host routes, both agents' skills and the retail
+example fixtures are vendored in the package (see `NOTICE`), and the reference packages
+install from Anthropic's repository at the pinned commit. The agents run on the Claude
+Agent SDK, so a Claude login is enough; no API key is read. Only the reference web apps
+(`make web`, the storefront on :3000 and the portal on :3100) need a checkout of the
+reference repository, which `make upstream` fetches.
+
+No Medusa store yet? `scripts/bootstrap_medusa.sh` creates one against any Postgres 16
+(`DATABASE_URL`) with `create-medusa-app`, which seeds a region, a sales channel, a
+publishable key and shipping options itself, adds the order-ownership middleware, runs the
+migrations, creates the admin user, and prints what to put in `.env`. `docker-compose.yml` starts Postgres and Redis
+for it. Then `make import-catalog` loads the packaged retail catalog and `make seed` adds
+the customers, orders and listings the tests use.
 
 ## Verified how
 
-- Offline: 138 tests over recorded Medusa and Stripe responses (`make test`), including
+- Offline: 138 tests over recorded Medusa and Stripe responses (`make test`, no checkout needed), including
   a webhook and success page racing on one cart, an apply interrupted before its stamp
   and finished by a retry, and two processes racing on one session.
 - Live: the same adapters against Medusa 2.20.1 with a Stripe test sandbox, through the

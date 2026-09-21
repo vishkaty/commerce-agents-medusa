@@ -1,0 +1,12 @@
+[
+  {"policy_id": "returns", "title": "Returns and refunds", "category": "returns",
+   "content": "Unused items in original packaging can be returned within 30 days of delivery for a full refund to the original payment method. Refunds are issued within 5 business days of the return arriving. Final-sale items are not returnable."},
+  {"policy_id": "shipping", "title": "Shipping", "category": "shipping",
+   "content": "Standard shipping is EUR 10 and arrives in 3 to 5 business days. Express shipping is EUR 10 and arrives in 1 to 2 business days. Orders ship from Berlin within one business day."},
+  {"policy_id": "exchanges", "title": "Exchanges", "category": "returns",
+   "content": "Sizes can be exchanged once within 30 days of delivery; the replacement ships after the original is received."},
+  {"policy_id": "cancellation", "title": "Order cancellation", "category": "orders",
+   "content": "An order can be cancelled from the account page until it ships. After that, use the returns process."},
+  {"policy_id": "payment", "title": "Payment", "category": "payment",
+   "content": "Cards are charged when the order is placed. Test mode: no real charge is made in this lab store."}
+]

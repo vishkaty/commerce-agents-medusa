@@ -25,14 +25,6 @@ from pathlib import Path
 from typing import Any
 
 from commerce_common.memory import JsonFileMemoryStore  # noqa: E402
-from demo_common import (  # noqa: E402
-    MemorySeeder,
-    MerchantIdentity,
-    SessionConflictError,
-    UnknownSessionError,
-    build_merchant_router,
-    build_storefront_host,
-)
 from fastapi import FastAPI, HTTPException, Request
 from merchant_agent import MerchantAgentConfig, MerchantSessionContext  # noqa: E402
 from merchant_agent.changes import ChangeNotApplicable  # noqa: E402
@@ -56,6 +48,14 @@ from commerce_medusa.order_requests import OrderRequestStore, WaitlistStore  # n
 from commerce_medusa.sessions import SqliteCartMap, SqliteSessionStore  # noqa: E402
 from commerce_medusa.settings import LabSettings  # noqa: E402
 from commerce_medusa.stripe_checkout import StripeClient  # noqa: E402
+from demo_common import (  # noqa: E402
+    MemorySeeder,
+    MerchantIdentity,
+    SessionConflictError,
+    UnknownSessionError,
+    build_merchant_router,
+    build_storefront_host,
+)
 
 logger = logging.getLogger("commerce_medusa.host.store")
 STORE_NAME = os.environ.get("STORE_NAME", "Demo Store")

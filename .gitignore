@@ -8,5 +8,5 @@ build/
 .env
 .env.*
 !.env.example
-data/
+/data/
 conformance-results.json

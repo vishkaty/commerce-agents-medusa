@@ -8,11 +8,11 @@ from __future__ import annotations
 import json
 
 import pytest
-from demo_common import SessionConflictError, UnknownSessionError
 from merchant_agent import AnalysisResult, Listing, MerchantSessionState
 from shopping_agent import Product, ShoppingSessionState
 
 from commerce_medusa.sessions import SqliteSessionStore
+from demo_common import SessionConflictError, UnknownSessionError
 
 
 @pytest.fixture

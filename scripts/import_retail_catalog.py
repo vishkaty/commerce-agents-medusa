@@ -14,12 +14,8 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-import os
 import sys
-from pathlib import Path
 from typing import Any
-
-from demo_common.storefront_fixtures import load_catalog, load_json  # noqa: E402
 
 from commerce_medusa.catalog_import import (  # noqa: E402
     category_name,
@@ -29,8 +25,9 @@ from commerce_medusa.catalog_import import (  # noqa: E402
 )
 from commerce_medusa.medusa_client import MedusaClient, MedusaError  # noqa: E402
 from commerce_medusa.settings import LabSettings  # noqa: E402
+from demo_common.storefront_fixtures import load_catalog, load_json  # noqa: E402
 
-DATA = Path(os.environ.get("COMMERCE_AGENTS", "")).expanduser() / "examples" / "retail" / "data"
+DATA = LabSettings.load().fixtures_dir
 CURRENCY = "usd"
 US_ZONE = "United States"
 US_SHIPPING = (

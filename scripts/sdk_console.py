@@ -20,6 +20,7 @@ from claude_agent_sdk import ClaudeSDKClient  # noqa: E402
 from shopping_agent import ShoppingAgentConfig  # noqa: E402
 from shopping_agent_sdk import make_options, run_turn  # noqa: E402
 
+from commerce_medusa.host.sdk_turn import packaged_skills
 from commerce_medusa.medusa_client import MedusaClient  # noqa: E402
 from commerce_medusa.medusa_storefront import CustomerDirectory, MedusaStorefront  # noqa: E402
 from commerce_medusa.order_placement import ShippingAddress  # noqa: E402
@@ -83,7 +84,12 @@ async def main_async(once: str | None) -> None:
     if not settings.medusa_publishable_key:
         sys.exit("MEDUSA_PUBLISHABLE_KEY missing in .env; see .env.example")
     backend = await build_backend(settings)
-    options, toolset = make_options(backend=backend, config=lab_config(), user_id=USER_ID)
+    options, toolset = make_options(
+        skills_dir=packaged_skills("shopping"),
+        backend=backend,
+        config=lab_config(),
+        user_id=USER_ID,
+    )
     async with ClaudeSDKClient(options=options) as client:
         if once:
             print_turn(await run_turn(client, once, toolset=toolset))

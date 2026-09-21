@@ -16,18 +16,18 @@ import contextlib
 import json
 import os
 import sys
-from pathlib import Path
 
 from claude_agent_sdk import ClaudeSDKClient  # noqa: E402
 from merchant_agent import MerchantAgentConfig  # noqa: E402
 from merchant_agent_sdk import make_options, run_turn  # noqa: E402
 
+from commerce_medusa.host.sdk_turn import packaged_skills
 from commerce_medusa.medusa_admin import MedusaAdmin  # noqa: E402
 from commerce_medusa.medusa_client import MedusaClient  # noqa: E402
 from commerce_medusa.medusa_merchant import MedusaMerchant  # noqa: E402
 from commerce_medusa.settings import LabSettings  # noqa: E402
 
-DATA = Path(os.environ.get("COMMERCE_AGENTS", "")).expanduser() / "examples" / "retail" / "data"
+DATA = LabSettings.load().fixtures_dir
 OPERATOR = os.environ.get("OPERATOR", "operator")
 
 
@@ -87,7 +87,9 @@ async def main_async(once: str | None, approve_all: bool) -> None:
         sys.exit("MEDUSA_ADMIN_EMAIL/PASSWORD missing in .env")
     config = lab_config()
     backend = build_backend(settings, config)
-    options, toolset = make_options(backend=backend, config=config, operator=OPERATOR)
+    options, toolset = make_options(
+        skills_dir=packaged_skills("merchant"), backend=backend, config=config, operator=OPERATOR
+    )
     async with ClaudeSDKClient(options=options) as client:
         if once:
             print_turn(await run_turn(client, once, toolset=toolset))

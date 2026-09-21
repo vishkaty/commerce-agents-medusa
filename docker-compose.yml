@@ -1,0 +1,17 @@
+# Postgres and Redis for a local Medusa. Not verified on the machine this package was
+# built on (no Docker there); the verified path is scripts/bootstrap_medusa.sh against
+# any Postgres 16.
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: medusa
+      POSTGRES_PASSWORD: medusa
+      POSTGRES_DB: medusa
+    ports: ["5432:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+  redis:
+    image: redis:7
+    ports: ["6379:6379"]
+volumes:
+  pgdata: {}

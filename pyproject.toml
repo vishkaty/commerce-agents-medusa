@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "commerce-agents-medusa"
-version = "0.1.0"
+version = "0.2.0"
 description = "Claude Commerce Agents over Medusa v2: StorefrontBackend and MerchantBackend adapters, durable ledger and sessions, Stripe Checkout placement, and a host for the reference web apps."
 readme = "README.md"
 license = "Apache-2.0"
@@ -30,9 +30,8 @@ dependencies = [
   "merchant-agent-core @ git+https://github.com/anthropics/commerce-agents.git@fd4d59224ab96b43c6dc6888207c67b3bd5a24cf#subdirectory=merchant-agent/core",
   "shopping-agent-runtime @ git+https://github.com/anthropics/commerce-agents.git@fd4d59224ab96b43c6dc6888207c67b3bd5a24cf#subdirectory=shopping-agent/runtime-messages-api",
   "merchant-agent-runtime @ git+https://github.com/anthropics/commerce-agents.git@fd4d59224ab96b43c6dc6888207c67b3bd5a24cf#subdirectory=merchant-agent/runtime-messages-api",
-  # The two Agent SDK runtimes (shopping-agent-sdk, merchant-agent-sdk) find their skills
-  # and their runtime root next to themselves in the checkout, so they
-  # are installed editable from it (`make setup`), not from a wheel.
+  "shopping-agent-sdk @ git+https://github.com/anthropics/commerce-agents.git@fd4d59224ab96b43c6dc6888207c67b3bd5a24cf#subdirectory=shopping-agent/runtime-agent-sdk",
+  "merchant-agent-sdk @ git+https://github.com/anthropics/commerce-agents.git@fd4d59224ab96b43c6dc6888207c67b3bd5a24cf#subdirectory=merchant-agent/runtime-agent-sdk",
 ]
 
 [project.optional-dependencies]
@@ -55,7 +54,7 @@ Conformance = "https://github.com/vishkaty/commerce-agents-conformance"
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/commerce_medusa"]
+packages = ["src/commerce_medusa", "src/demo_common"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
@@ -67,6 +66,7 @@ markers = ["medusa: needs a running Medusa store"]
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+exclude = ["src/demo_common"]  # vendored unchanged from the reference
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]

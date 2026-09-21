@@ -19,10 +19,12 @@ import asyncio
 import inspect
 import json
 import logging
+import os
 import re
 import time
 from collections.abc import AsyncIterator, Awaitable, Callable
 from dataclasses import dataclass
+from importlib.resources import files
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
@@ -84,6 +86,20 @@ logger = logging.getLogger("lab.host.sdk")
 
 TurnRunner = Callable[[Any, str, Any], Awaitable[TurnResult]]
 ClientFactory = Callable[[ClaudeAgentOptions], Any]
+
+
+def packaged_skills(role: str) -> Path:
+    """The agent skills vendored with this package (`skills/shopping`, `skills/merchant`)."""
+    return Path(str(files("commerce_medusa") / "skills" / role))
+
+
+def project_root(role: str) -> Path:
+    """The working directory the Claude Code subprocess runs in for a role: under
+    ``DATA_DIR`` (default ``data/``), so the skills link and the SDK's own files land
+    somewhere writable rather than inside site-packages."""
+    root = Path(os.environ.get("DATA_DIR", "data")) / "agents" / role
+    root.mkdir(parents=True, exist_ok=True)
+    return root
 
 
 class CollectingShoppingToolset(ShoppingToolset):
@@ -483,7 +499,7 @@ class SdkShoppingAgent(_SdkAgentBase):
         super().__init__(**kwargs)
         self.backend = backend
         self.config = config
-        self.skills_root = shopping_sdk.SKILLS_DIR if skills_dir is None else skills_dir
+        self.skills_root = packaged_skills("shopping") if skills_dir is None else skills_dir
         self.skills: SkillRegistry = shopping_sdk.load_skill_registry(self.skills_root)
         self.memory: MemoryRuntime = build_shopping_memory(
             config, memory_store or InMemoryMemoryStore(), memory_write_filter
@@ -502,7 +518,7 @@ class SdkShoppingAgent(_SdkAgentBase):
             memory_store=self.memory.store,
             memory_write_filter=self.memory.write_filter,
         )
-        ensure_project_skills(self.skills_root, shopping_sdk.RUNTIME_ROOT)
+        ensure_project_skills(self.skills_root, project_root("shopping"))
         options = ClaudeAgentOptions(
             system_prompt=shopping_sdk.build_system_prompt(self.config, self.skills),
             mcp_servers={shopping_sdk.SERVER_NAME: build_lab_shopping_server(toolset)},
@@ -510,7 +526,7 @@ class SdkShoppingAgent(_SdkAgentBase):
             tools=["Skill"],
             skills=self.skills.names,
             setting_sources=["project"],
-            cwd=shopping_sdk.RUNTIME_ROOT,
+            cwd=project_root("shopping"),
             env={"CLAUDE_CODE_DISABLE_CLAUDE_MDS": "1"},
             model=self.config.model,
             max_turns=self._max_turns,
@@ -558,7 +574,7 @@ class SdkMerchantAgent(_SdkAgentBase):
         super().__init__(**kwargs)
         self.backend = backend
         self.config = config
-        self.skills_root = merchant_sdk.SKILLS_DIR if skills_dir is None else skills_dir
+        self.skills_root = packaged_skills("merchant") if skills_dir is None else skills_dir
         self.skills: SkillRegistry = merchant_sdk.load_skill_registry(self.skills_root)
         self.memory: MemoryRuntime = build_merchant_memory(
             config, memory_store or InMemoryMemoryStore(), memory_write_filter
@@ -574,7 +590,7 @@ class SdkMerchantAgent(_SdkAgentBase):
             memory_store=self.memory.store,
             memory_write_filter=self.memory.write_filter,
         )
-        ensure_project_skills(self.skills_root, merchant_sdk.RUNTIME_ROOT)
+        ensure_project_skills(self.skills_root, project_root("merchant"))
         options = ClaudeAgentOptions(
             system_prompt=merchant_sdk.build_system_prompt(self.config, self.skills),
             mcp_servers={merchant_sdk.SERVER_NAME: build_merchant_server(toolset)},
@@ -582,7 +598,7 @@ class SdkMerchantAgent(_SdkAgentBase):
             tools=["Skill"],
             skills=self.skills.names,
             setting_sources=["project"],
-            cwd=merchant_sdk.RUNTIME_ROOT,
+            cwd=project_root("merchant"),
             env={"CLAUDE_CODE_DISABLE_CLAUDE_MDS": "1"},
             model=self.config.model,
             max_turns=self._max_turns,

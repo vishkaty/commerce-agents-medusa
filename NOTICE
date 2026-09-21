@@ -6,5 +6,13 @@ implementation, https://github.com/anthropics/commerce-agents (Copyright 2026 An
 PBC, Apache License 2.0), and serves its example web apps. The merchant fixtures the
 host can read (metrics history, campaigns, issues) come from that repository's
 examples/retail/data at run time; nothing from it is redistributed here.
+Vendored from that repository at commit fd4d592, unchanged, so the package runs without a
+checkout of it:
+- src/demo_common/: the example host routes, session store and fixture loaders
+  (examples/demo_common, Apache-2.0, Copyright 2026 Anthropic PBC);
+- src/commerce_medusa/skills/: the shopping and merchant agent skills
+  (shopping-agent/skills, merchant-agent/skills);
+- src/commerce_medusa/data/retail/: the retail example fixtures (examples/retail/data),
+  seed data and the merchant's metrics history.
 platform/medusa-backend/ holds two files for a Medusa v2 application created with
 create-medusa-app (Medusa, MIT).
