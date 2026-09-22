@@ -292,6 +292,7 @@ async def test_checkout_handoff_reports_a_price_change_and_refreshes_the_line():
     session = ShoppingSessionContext(session_id="s-drift", user_id="priya")
     cart = await backend.add_to_cart(session, XL["id"], 1)
     assert cart.items[0].price == 10.0
+    line_id = next(iter(fake.carts.values()))[0]["id"]
     shorts = next(p for p in products if any(v["id"] == XL["id"] for v in p["variants"]))
     variant = next(v for v in shorts["variants"] if v["id"] == XL["id"])
     variant["calculated_price"]["calculated_amount"] = 12  # the merchant moved the price
@@ -302,5 +303,14 @@ async def test_checkout_handoff_reports_a_price_change_and_refreshes_the_line():
     assert forms == []
     refreshed = await backend.get_cart(session)
     assert [(i.product_id, i.price, i.quantity) for i in refreshed.items] == [(XL["id"], 12.0, 1)]
+    # The line is refreshed in place: Medusa reprices it on a line-item update, so the
+    # line keeps its id and nothing is deleted (verified live 2026-09-22 against 2.20.1).
+    lines = next(iter(fake.carts.values()))
+    assert [line["id"] for line in lines] == [line_id]
+    assert not any(method == "DELETE" for method, _path, _body in fake.requests)
+    assert any(
+        method == "POST" and path.endswith(f"/line-items/{line_id}")
+        for method, path, _body in fake.requests
+    )
     handoffs = await backend.checkout_handoff(session, refreshed)
     assert handoffs and forms[0]["line_items[0][price_data][unit_amount]"] == "1200"

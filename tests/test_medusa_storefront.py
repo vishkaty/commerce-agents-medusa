@@ -134,10 +134,22 @@ class FakeMedusa:
                 self.cart_promos.setdefault(cart_id, set()).difference_update(codes)
             return httpx.Response(200, json={"cart": self._cart(cart_id)})
         if "/line-items/" in path and request.method == "POST":
+            # Medusa runs refreshCartItemsWorkflow on a line-item update, so the line
+            # takes the catalog's current price even when only the quantity is sent
+            # (verified live on 2026-09-22 against 2.20.1).
             cart_id, line_id = self._cart_id(path), path.rsplit("/", 1)[1]
+
+            def refreshed(line: dict) -> dict:
+                for product in self.products:
+                    for variant in product["variants"]:
+                        if variant["id"] == line.get("variant_id"):
+                            price = (variant.get("calculated_price") or {}).get("calculated_amount")
+                            if price is not None:
+                                return dict(line, quantity=body["quantity"], unit_price=price)
+                return dict(line, quantity=body["quantity"])
+
             self.carts[cart_id] = [
-                dict(ln, quantity=body["quantity"]) if ln["id"] == line_id else ln
-                for ln in self.carts.get(cart_id, [])
+                refreshed(ln) if ln["id"] == line_id else ln for ln in self.carts.get(cart_id, [])
             ]
             return httpx.Response(200, json={"cart": self._cart(cart_id)})
         if "/line-items/" in path and request.method == "DELETE":

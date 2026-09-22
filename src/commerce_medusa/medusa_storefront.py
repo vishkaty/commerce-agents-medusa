@@ -511,7 +511,7 @@ class MedusaStorefront(StorefrontBackend):
 
     async def _revalidate(self, session: ShoppingSessionContext, cart: Cart) -> None:
         """Every line against the live catalog before money moves (HS-S-07). A line that
-        cannot be fulfilled is named; a line whose price moved is re-added at the current
+        cannot be fulfilled is named; a line whose price moved is refreshed to the current
         price and named, so the next checkout shows what will be charged."""
         problems: list[str] = []
         refreshed = False
@@ -531,7 +531,7 @@ class MedusaStorefront(StorefrontBackend):
                     continue
             current = (raw.get("calculated_price") or {}).get("calculated_amount")
             if current is not None and abs(float(current) - item.price) >= 0.005:
-                await self._readd_line(session, variant_id, item.quantity)
+                await self._refresh_line(session, variant_id, item.quantity)
                 refreshed = True
                 problems.append(
                     f"{item.product_id} price changed {item.price:.2f} → {float(current):.2f}"
@@ -540,20 +540,27 @@ class MedusaStorefront(StorefrontBackend):
             note = "; the cart now shows the current prices, check out again" if refreshed else ""
             raise CartStale("cart changed since it was reviewed: " + "; ".join(problems) + note)
 
-    async def _readd_line(
+    async def _refresh_line(
         self, session: ShoppingSessionContext, variant_id: str, quantity: int
     ) -> None:
+        """Bring one line to the catalog's current price. Medusa runs
+        ``refreshCartItemsWorkflow`` on a line-item update, so re-sending the quantity the
+        line already has reprices it in place and keeps its id; a cart-level update or a
+        plain read does not (verified against 2.20.1 on 2026-09-22). A line the cart no
+        longer holds is added instead."""
         async with self._session_lock(session):
             raw_cart = await self._raw_cart(session)
             line = self._line_for(raw_cart, variant_id)
-            if line is not None:
-                await self.client.delete(
-                    f"/store/carts/{raw_cart['id']}/line-items/{line['id']}",
+            if line is None:
+                await self.client.post(
+                    f"/store/carts/{raw_cart['id']}/line-items",
+                    {"variant_id": variant_id, "quantity": quantity},
                     token=self._token(session),
                 )
+                return
             await self.client.post(
-                f"/store/carts/{raw_cart['id']}/line-items",
-                {"variant_id": variant_id, "quantity": quantity},
+                f"/store/carts/{raw_cart['id']}/line-items/{line['id']}",
+                {"quantity": quantity},
                 token=self._token(session),
             )
 
